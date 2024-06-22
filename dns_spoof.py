@@ -9,6 +9,7 @@ import netifaces
 
 # Suppress WARNING Message and display only Error Message
 conf.logLevel = logging.ERROR
+INTERFACE = conf.iface 
 
 # Interface to use for the attack
 
@@ -97,7 +98,6 @@ def main():
     hosts = discover_hosts(network)
     router_ip = get_default_gateway()
     router_mac = get_mac(router_ip)
-    INTERFACE = conf.iface 
 
     for ip, mac in hosts:
         if ip == router_ip:
